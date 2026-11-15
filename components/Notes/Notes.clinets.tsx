@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteNote, fetchNotes } from "@/lid/api";
+import { deleteNote, fetchNotes } from "@/lib/api";
 import type { Note } from "@/types/note";
 import styles from "./Notes.module.css";
 

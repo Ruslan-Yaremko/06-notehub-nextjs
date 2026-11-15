@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote } from "@/lid/api";
+import { createNote } from "@/lib/api";
 import styles from "./NoteForm.module.css";
 
 export default function NoteForm() {

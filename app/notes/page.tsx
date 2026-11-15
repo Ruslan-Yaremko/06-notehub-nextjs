@@ -5,7 +5,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 
-import { fetchNotes } from "@/lid/api";
+import { fetchNotes } from "@/lib/api";
 import Notes from "@/components/Notes/Notes.clinets";
 import NoteForm from "@/components/NoteForm/NoteForm";
 
