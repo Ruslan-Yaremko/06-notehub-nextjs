@@ -7,7 +7,6 @@ import {
 
 import { fetchNotes } from "@/lib/api";
 import Notes from "@/components/Notes/Notes.clinets";
-import NoteForm from "@/components/NoteForm/NoteForm";
 
 export default async function NotesPage() {
   const queryClient = new QueryClient();
@@ -20,7 +19,6 @@ export default async function NotesPage() {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main>
-        <NoteForm />
         <Notes />
       </main>
     </HydrationBoundary>
