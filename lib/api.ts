@@ -1,9 +1,13 @@
 import axios from "axios";
+
 import type {
   Note,
   NoteFormValues,
-  FetchNotesResponse,
 } from "@/types/note";
+
+import type {
+  FetchNotesResponse,
+} from "@/types/api";
 
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",
