@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -19,9 +20,7 @@ const validationSchema = Yup.object({
     .min(3, "Title must be at least 3 characters"),
 
   content: Yup.string()
-    .trim()
-    .required("Content is required")
-    .min(10, "Content must be at least 10 characters"),
+    .max(500, "Content must be at most 500 characters"),
 
   tag: Yup.string()
     .oneOf(

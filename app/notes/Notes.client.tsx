@@ -63,11 +63,13 @@ export default function Notes() {
 
     <NoteList notes={data?.notes ?? []} />
 
-      <Pagination
-        page={page}
-        totalPages={data?.totalPages ?? 1}
-        onPageChange={setPage}
-      />
+  {data && data.totalPages > 1 && (
+  <Pagination
+    page={page}
+    totalPages={data.totalPages}
+    onPageChange={setPage}
+  />
+)}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
