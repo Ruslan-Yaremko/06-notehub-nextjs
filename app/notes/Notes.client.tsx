@@ -1,28 +1,40 @@
+
 "use client";
 
-import { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { deleteNote, fetchNotes } from "@/lib/api";
+import { useEffect, useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { fetchNotes } from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import NoteList from "@/components/NoteList/NoteList";
 import Pagination from "@/components/Pagination/Pagination";
+import Modal from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
+
 import styles from "./Notes.module.css";
 
 export default function Notes() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
-  const queryClient = useQueryClient();
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [search]);
 
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["notes", page, search],
-    queryFn: () => fetchNotes({ page, search }),
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: deleteNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-    },
+    queryKey: ["notes", page, debouncedSearch],
+    queryFn: () =>
+      fetchNotes({
+        page,
+        search: debouncedSearch,
+      }),
+    placeholderData: (previousData) => previousData,
   });
 
   if (isLoading) return <p>Loading notes...</p>;
@@ -40,18 +52,28 @@ export default function Notes() {
             setPage(1);
           }}
         />
+
+        <button
+          type="button"
+          onClick={() => setIsModalOpen(true)}
+        >
+          Create note
+        </button>
       </div>
 
-      <NoteList
-        notes={data?.notes ?? []}
-        onDelete={(id) => deleteMutation.mutate(id)}
-      />
+    <NoteList notes={data?.notes ?? []} />
 
       <Pagination
         page={page}
         totalPages={data?.totalPages ?? 1}
         onPageChange={setPage}
       />
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm onClose={() => setIsModalOpen(false)} />
+        </Modal>
+      )}
     </section>
   );
 }

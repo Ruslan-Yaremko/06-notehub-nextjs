@@ -3,7 +3,7 @@ import type {
   Note,
   NoteFormValues,
   FetchNotesResponse,
-} from "@/types/note";
+} from "@/types/api";
 
 const api = axios.create({
   baseURL: "https://notehub-public.goit.study/api",

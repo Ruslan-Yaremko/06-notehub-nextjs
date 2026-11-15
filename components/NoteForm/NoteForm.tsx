@@ -1,71 +1,118 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+
 import { createNote } from "@/lib/api";
+import type { NoteFormValues } from "@/types/note";
 import styles from "./NoteForm.module.css";
 
-export default function NoteForm() {
-  const queryClient = useQueryClient();
+interface NoteFormProps {
+  onClose: () => void;
+}
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [tag, setTag] = useState("Todo");
+const validationSchema = Yup.object({
+  title: Yup.string()
+    .trim()
+    .required("Title is required")
+    .min(3, "Title must be at least 3 characters"),
+
+  content: Yup.string()
+    .trim()
+    .required("Content is required")
+    .min(10, "Content must be at least 10 characters"),
+
+  tag: Yup.string()
+    .oneOf(
+      ["Todo", "Work", "Personal", "Meeting", "Shopping"],
+      "Invalid tag"
+    )
+    .required("Tag is required"),
+});
+
+export default function NoteForm({ onClose }: NoteFormProps) {
+  const queryClient = useQueryClient();
 
   const mutation = useMutation({
     mutationFn: createNote,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notes"] });
-      setTitle("");
-      setContent("");
-      setTag("Todo");
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["notes"],
+      });
+
+      onClose();
     },
   });
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const initialValues: NoteFormValues = {
+    title: "",
+    content: "",
+    tag: "Todo",
+  };
 
-    if (!title.trim() || !content.trim()) return;
-
+  const handleSubmit = (values: NoteFormValues) => {
     mutation.mutate({
-      title: title.trim(),
-      content: content.trim(),
-      tag,
+      title: values.title.trim(),
+      content: values.content.trim(),
+      tag: values.tag,
     });
-  }
+  };
 
   return (
-    <form className={styles.form} onSubmit={handleSubmit}>
-      <h2>Create a note</h2>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={handleSubmit}
+    >
+      <Form className={styles.form}>
+        <h2>Create a note</h2>
 
-      <input
-        value={title}
-        onChange={(event) => setTitle(event.target.value)}
-        placeholder="Note title"
-        required
-      />
+        <Field
+          type="text"
+          name="title"
+          placeholder="Note title"
+        />
+        <ErrorMessage
+          name="title"
+          component="p"
+        />
 
-      <textarea
-        value={content}
-        onChange={(event) => setContent(event.target.value)}
-        placeholder="Note content"
-        required
-        rows={4}
-      />
+        <Field
+          as="textarea"
+          name="content"
+          placeholder="Note content"
+          rows={4}
+        />
+        <ErrorMessage
+          name="content"
+          component="p"
+        />
 
-      <select value={tag} onChange={(event) => setTag(event.target.value)}>
-        <option value="Todo">Todo</option>
-        <option value="Work">Work</option>
-        <option value="Personal">Personal</option>
-        <option value="Meeting">Meeting</option>
-        <option value="Shopping">Shopping</option>
-      </select>
+        <Field as="select" name="tag">
+          <option value="Todo">Todo</option>
+          <option value="Work">Work</option>
+          <option value="Personal">Personal</option>
+          <option value="Meeting">Meeting</option>
+          <option value="Shopping">Shopping</option>
+        </Field>
+        <ErrorMessage
+          name="tag"
+          component="p"
+        />
 
-      <button type="submit" disabled={mutation.isPending}>
-        {mutation.isPending ? "Creating..." : "Create note"}
-      </button>
+        {mutation.isError && (
+          <p>Could not create the note. Try again.</p>
+        )}
 
-      {mutation.isError && <p>Could not create the note. Try again.</p>}
-    </form>
+        <button type="submit" disabled={mutation.isPending}>
+          {mutation.isPending ? "Creating..." : "Create note"}
+        </button>
+
+        <button type="button" onClick={onClose}>
+          Cancel
+        </button>
+      </Form>
+    </Formik>
   );
 }
